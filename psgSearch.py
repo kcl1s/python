@@ -26,19 +26,17 @@ for url in urls:
     links= [x for x in links if x[2]>0]
     links.sort(reverse=True,key=lambda x: int(x[2]))
     for link in links:
-        #print (link)
         thisHTML = '<a href="'+url+link[0]+'">'+link[1]+'</a><br>'
-        #print (thisHTML)
         linkHTML += thisHTML
     linkHTML += '</p>'
-    #print (len(links))
     allLinks.append(linkHTML)
 
 searchURL = "psgSearch.html"
 f = open(searchURL, 'w')
-htmlOpen = '<html>\n<head>\n<title>Title</title>\n</head>\n<body>\n<center>\n<h2 style="font-size:60px";>PySimpleGUI Search</h2>\n'
+htmlOpen = '<html>\n<head>\n<title>PSG Search</title>\n</head>\n<body>\n<center>\n<h2 style="font-size:60px";>PySimpleGUI Search</h2>\n'
+htmlSearch= '<p style="font-size:20px;"><b>Search Terms: </b><i>'+keyText+'</i></p>'
 htmlClose = '<center>\n</body>\n</html>'
-html_template = htmlOpen + allLinks[0] + allLinks[1] + allLinks[2] + allLinks[3] + htmlClose
+html_template = htmlOpen + htmlSearch + allLinks[0] + allLinks[1] + allLinks[2] + allLinks[3] + htmlClose
 f.write(html_template)
 f.close()
 webbrowser.open(searchURL)
