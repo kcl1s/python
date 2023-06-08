@@ -1,0 +1,72 @@
+import RPi.GPIO as GPIO
+from time import sleep as sl
+#pins
+chipSel= 17
+clock= 18
+dataIO= 27
+# f = half cycle so this gives about 50 kHz (datasheet range 10 kHz - 400 kHz)
+f=.00001
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(chipSel, GPIO.OUT)
+GPIO.setup(clock, GPIO.OUT)
+GPIO.setup(22, GPIO.OUT)
+
+pwm=GPIO.PWM(22,50)
+pwm.start(0)
+
+def bi():
+    return GPIO.input(dataIO)
+
+def bo(val):
+    GPIO.output(dataIO,val)
+
+def ck(val):
+    GPIO.output(clock, val)
+
+def readADC(ch):
+    data = 0   
+    GPIO.output(chipSel, 0)     #set chipSel low for whole read transaction    
+    GPIO.setup(dataIO, GPIO.OUT)    #set to data write
+    #start clock and send channel info on rising edge
+    ck(0);bo(1);sl(f)   #start bit
+    ck(1);sl(f)
+    ck(0);bo(1);sl(f)   #single end mode bit
+    ck(1);sl(f)
+    ck(0);bo(ch%2);sl(f)    #odd bit
+    ck(1);sl(f)
+    ck(0);bo(int(ch > 1));sl(f) #select bit
+    ck(1);sl(f)
+    ck(0);sl(f)     #half cycle to settle Mux
+    GPIO.setup(dataIO, GPIO.IN) #set to data read after falling edge
+    for i in range(7,-1,-1):
+        ck(1);sl(f)
+        ck(0);sl(f)
+        data = data | GPIO.input(dataIO) << i
+    for i in range(0,9):
+        ck(1);sl(f)
+        ck(0);sl(f)
+    GPIO.output(chipSel,1)
+    GPIO.setup(dataIO,GPIO.OUT)
+    return data
+
+def mapThis(x, in_min, in_max, out_min, out_max):
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+
+try:
+    for i in range (0,255):
+        pwmIN=mapThis(i,0,255,2,12)
+        pwm.ChangeDutyCycle(pwmIN)
+        sl(.01)
+    for i in range (255,0,-1):
+        pwmIN=mapThis(i,0,255,2,12)
+        pwm.ChangeDutyCycle(pwmIN) 
+        sl(.01)   
+    while True:
+        potIN=readADC(0)
+        pwmIN=mapThis(potIN,0,255,2,12)
+        print(potIN,round(pwmIN,2))
+        pwm.ChangeDutyCycle(pwmIN)      
+        sl(.2)
+
+except KeyboardInterrupt:
+    GPIO.cleanup()
