@@ -49,24 +49,10 @@ def readADC(ch):
     GPIO.setup(dataIO,GPIO.OUT)
     return data
 
-def mapThis(x, in_min, in_max, out_min, out_max):
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-
-try:
-    for i in range (0,255):
-        pwmIN=mapThis(i,0,255,2,12)
-        pwm.ChangeDutyCycle(pwmIN)
-        sl(.01)
-    for i in range (255,0,-1):
-        pwmIN=mapThis(i,0,255,2,12)
-        pwm.ChangeDutyCycle(pwmIN) 
-        sl(.01)   
+try:   
     while True:
-        potIN=readADC(0)
-        pwmIN=mapThis(potIN,0,255,2,12)
-        print(potIN,round(pwmIN,2))
-        pwm.ChangeDutyCycle(pwmIN)      
-        sl(.2)
+        print(readADC(0))      
+        sl(1)
 
 except KeyboardInterrupt:
     GPIO.cleanup()
