@@ -1,17 +1,6 @@
-from machine import Pin, I2C
-from ssd1306 import SSD1306_I2C
-import time
-from math import sin, cos
-#
-i2c = I2C(0, scl=Pin(5), sda=Pin(4), freq=3200000)
-oled = SSD1306_I2C(128, 64, i2c)
-A = 30
-k = 4/5
-start=time.ticks_ms()
-for i in range(1000):
-  t = i/25
-  x = round(A * cos(k * t) * cos(t))
-  y = round(A * cos(k * t) * sin(t))
-  oled.pixel(x+64,y+32,1)
-  oled.show()
-print(time.ticks_diff(time.ticks_ms(), start))
+from machine import Pin
+from time import sleep
+obL= Pin('LED', Pin.OUT)
+while True:
+    obL.toggle()
+    sleep(1)
