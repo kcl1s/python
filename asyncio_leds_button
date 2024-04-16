@@ -1,0 +1,41 @@
+from machine import Pin
+import uasyncio as asyncio
+
+red_led = Pin(11, Pin.OUT)
+yellow_led = Pin(12, Pin.OUT)
+blue_led = Pin(13, Pin.OUT)
+btn = Pin(10, Pin.IN, Pin.PULL_UP)
+
+async def blink(led, on_time, off_time):
+    while True:
+        led.on()
+        await asyncio.sleep_ms(on_time)
+        led.off()
+        await asyncio.sleep_ms(off_time)
+        
+async def blink_t(led, on_time, off_time, num_blinks):
+    while num_blinks > 0:
+        led.on()
+        await asyncio.sleep_ms(on_time)
+        led.off()
+        await asyncio.sleep_ms(off_time)
+        num_blinks -= 1
+
+async def wait_button():
+    while True:
+        prev_state = btn.value()
+        while btn.value() >= prev_state:
+            prev_state = btn.value()
+            await asyncio.sleep_ms(25)
+        asyncio.create_task(blink_t(blue_led, 500, 1000, 10))
+        await asyncio.sleep_ms(25)
+                      
+async def main():
+    btn_press = asyncio.Event()
+    asyncio.create_task(blink(red_led, 700, 500))
+    asyncio.create_task(blink(yellow_led, 400, 100))    
+    asyncio.create_task(wait_button())
+    while True:
+        await asyncio.sleep_ms(1000)
+
+asyncio.run(main())
